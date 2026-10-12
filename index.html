@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>러닝 크루 설문 인사이트</title>
+<meta name="description" content="러너 설문 응답을 페인포인트, 인사이트, 문항별 차트로 정리한 리포트">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root { --cds-dur-slow: 450ms; --cds-ease-out: cubic-bezier(.2, .8, .2, 1); --color-bad: #F04452; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; } }
+html, body { margin: 0; }
+body { background: #F2F4F6; -webkit-font-smoothing: antialiased; }
+@media (prefers-color-scheme: dark) { body { background: #101013; } }
+.rs { min-height: 100vh; box-sizing: border-box; }
+.rs *, .rs *::before, .rs *::after { box-sizing: border-box; }
+.rs .dash-skeleton { color: transparent; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+window.SURVEY_DATA = {"tally": [{"qid": "q01", "section": "프로필", "question": "러닝 수준", "option": "초급 — 5km 정도를 무리 없이 달릴 수 있음", "count": "2", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q01", "section": "프로필", "question": "러닝 수준", "option": "중급 — 10km 이상 러닝 경험이 있음", "count": "11", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q01", "section": "프로필", "question": "러닝 수준", "option": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "count": "7", "base": "20", "multi": "0", "rank": "3"}, {"qid": "q02", "section": "프로필", "question": "러닝 크루 소속 여부", "option": "소속되어 있다", "count": "9", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q02", "section": "프로필", "question": "러닝 크루 소속 여부", "option": "과거에 소속된 적이 있다", "count": "3", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q02", "section": "프로필", "question": "러닝 크루 소속 여부", "option": "소속된 적 없다", "count": "8", "base": "20", "multi": "0", "rank": "3"}, {"qid": "q03", "section": "크루", "question": "크루에서 주로 하는 활동", "option": "번개 러닝", "count": "8", "base": "12", "multi": "1", "rank": "1"}, {"qid": "q03", "section": "크루", "question": "크루에서 주로 하는 활동", "option": "정기 러닝", "count": "7", "base": "12", "multi": "1", "rank": "2"}, {"qid": "q03", "section": "크루", "question": "크루에서 주로 하는 활동", "option": "대회 참여", "count": "7", "base": "12", "multi": "1", "rank": "3"}, {"qid": "q03", "section": "크루", "question": "크루에서 주로 하는 활동", "option": "친목 및 커뮤니티 활동", "count": "6", "base": "12", "multi": "1", "rank": "4"}, {"qid": "q03", "section": "크루", "question": "크루에서 주로 하는 활동", "option": "챌린지/미션", "count": "4", "base": "12", "multi": "1", "rank": "5"}, {"qid": "q03", "section": "크루", "question": "크루에서 주로 하는 활동", "option": "기록 측정 및 관리", "count": "3", "base": "12", "multi": "1", "rank": "6"}, {"qid": "q04", "section": "크루", "question": "크루에서 선호하는 위치", "option": "크루원 역할", "count": "8", "base": "12", "multi": "0", "rank": "1"}, {"qid": "q04", "section": "크루", "question": "크루에서 선호하는 위치", "option": "운영자 역할", "count": "4", "base": "12", "multi": "0", "rank": "2"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서", "count": "15", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "정기적으로 러닝하는 습관을 만들기 위해", "count": "7", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "러닝 기록 및 실력을 향상시키기 위해", "count": "3", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "사람들과 친목을 쌓기 위해", "count": "3", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "러닝 대회/이벤트에 함께 참여하기 위해", "count": "2", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "새로운 러닝 코스나 장소를 경험하기 위해", "count": "2", "base": "20", "multi": "1", "rank": "6"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "비슷한 수준의 러너를 만나기 위해", "count": "1", "base": "20", "multi": "1", "rank": "7"}, {"qid": "q05", "section": "크루", "question": "크루에 가입·결성하는 이유", "option": "기타 (직접 입력)", "count": "3", "base": "20", "multi": "1", "rank": "8"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "크루원 간 실력/페이스를 맞추기 어렵다", "count": "8", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "번개 러닝 모집이 어렵다", "count": "5", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "특별히 불편한 점이 없다", "count": "5", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "일정 조율이 어렵다", "count": "4", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "크루원별 참여도/활동량을 확인하기 어렵다", "count": "4", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "회비 관리 및 정산이 번거롭다", "count": "3", "base": "20", "multi": "1", "rank": "6"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "출석 및 참여 기록 관리가 번거롭다", "count": "2", "base": "20", "multi": "1", "rank": "7"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "참여 인원을 파악하기 어렵다", "count": "1", "base": "20", "multi": "1", "rank": "8"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "공지 및 정보가 여러 채널로 흩어져 있다", "count": "1", "base": "20", "multi": "1", "rank": "9"}, {"qid": "q06", "section": "크루", "question": "크루 운영·참여 시 불편했던 점", "option": "기타 (직접 입력)", "count": "2", "base": "20", "multi": "1", "rank": "10"}, {"qid": "q07", "section": "공유", "question": "러닝 기록 공유 방법", "option": "러닝 기록 앱을 이용한다", "count": "15", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q07", "section": "공유", "question": "러닝 기록 공유 방법", "option": "SNS(ex. 인스타그램)에 기록한다", "count": "3", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q07", "section": "공유", "question": "러닝 기록 공유 방법", "option": "오픈채팅방에 공유한다", "count": "2", "base": "20", "multi": "0", "rank": "3"}, {"qid": "q08", "section": "공유", "question": "공유하는 내용", "option": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "count": "17", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q08", "section": "공유", "question": "공유하는 내용", "option": "러닝 후기 및 느낌", "count": "6", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q08", "section": "공유", "question": "공유하는 내용", "option": "러닝 코스 자체 (Strava 등)", "count": "3", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q08", "section": "공유", "question": "공유하는 내용", "option": "공유하지 않는다", "count": "2", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q08", "section": "공유", "question": "공유하는 내용", "option": "코스 풍경 사진", "count": "2", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q09", "section": "공유", "question": "공유하는 이유", "option": "다른 사람에게 동기부여를 주거나 받기 위해", "count": "16", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q09", "section": "공유", "question": "공유하는 이유", "option": "러닝 정보를 공유하기 위해", "count": "7", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q09", "section": "공유", "question": "공유하는 이유", "option": "기록을 자랑하기 위해", "count": "5", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q09", "section": "공유", "question": "공유하는 이유", "option": "SNS 콘텐츠로 활용하기 위해", "count": "4", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q09", "section": "공유", "question": "공유하는 이유", "option": "기록 경쟁을 위해", "count": "2", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q10", "section": "공유", "question": "공유 대상 선호", "option": "친구/팔로워에게만", "count": "11", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q10", "section": "공유", "question": "공유 대상 선호", "option": "전체 러닝 커뮤니티에", "count": "8", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q10", "section": "공유", "question": "공유 대상 선호", "option": "소속 크루원에게만", "count": "1", "base": "20", "multi": "0", "rank": "3"}, {"qid": "q11", "section": "함께", "question": "함께 달릴 때 선호하는 방식", "option": "기존 친구와 함께", "count": "8", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q11", "section": "함께", "question": "함께 달릴 때 선호하는 방식", "option": "러닝 수준/페이스가 비슷한 사람과 함께", "count": "5", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q11", "section": "함께", "question": "함께 달릴 때 선호하는 방식", "option": "커뮤니티 팔로우 관계의 러너와 함께", "count": "4", "base": "20", "multi": "0", "rank": "3"}, {"qid": "q11", "section": "함께", "question": "함께 달릴 때 선호하는 방식", "option": "같은 크루원과 함께", "count": "3", "base": "20", "multi": "0", "rank": "4"}, {"qid": "q12", "section": "함께", "question": "번개·새 크루 참여 시 부담", "option": "모임의 분위기를 알기 어렵다", "count": "12", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q12", "section": "함께", "question": "번개·새 크루 참여 시 부담", "option": "나와 러닝 수준이 맞을지 걱정된다", "count": "9", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q12", "section": "함께", "question": "번개·새 크루 참여 시 부담", "option": "처음 보는 사람과 함께 달리는 것이 부담스럽다", "count": "6", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q12", "section": "함께", "question": "번개·새 크루 참여 시 부담", "option": "일정/장소를 맞추기 어렵다", "count": "5", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q12", "section": "함께", "question": "번개·새 크루 참여 시 부담", "option": "크루 모집 정보를 찾기 어렵다", "count": "2", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q12", "section": "함께", "question": "번개·새 크루 참여 시 부담", "option": "참여 신청 과정이 번거롭다", "count": "1", "base": "20", "multi": "1", "rank": "6"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "러닝 페이스/난이도", "count": "12", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "함께하는 사람 or 분위기", "count": "11", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "위치", "count": "11", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "참여 인원 규모", "count": "7", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "시간", "count": "6", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "거리", "count": "5", "base": "20", "multi": "1", "rank": "6"}, {"qid": "q13", "section": "함께", "question": "모임 선택 시 중요 조건", "option": "코스", "count": "4", "base": "20", "multi": "1", "rank": "7"}, {"qid": "q14", "section": "서비스", "question": "러닝 커뮤니티·서비스 이용 여부", "option": "있다", "count": "3", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q14", "section": "서비스", "question": "러닝 커뮤니티·서비스 이용 여부", "option": "없다", "count": "17", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q17", "section": "챌린지", "question": "러닝 챌린지 참여 경험", "option": "있다", "count": "11", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q17", "section": "챌린지", "question": "러닝 챌린지 참여 경험", "option": "없다", "count": "9", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q18", "section": "챌린지", "question": "챌린지 참여 의향", "option": "매우 그렇다", "count": "10", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q18", "section": "챌린지", "question": "챌린지 참여 의향", "option": "그렇다", "count": "6", "base": "20", "multi": "0", "rank": "2"}, {"qid": "q18", "section": "챌린지", "question": "챌린지 참여 의향", "option": "보통이다", "count": "4", "base": "20", "multi": "0", "rank": "3"}, {"qid": "q18", "section": "챌린지", "question": "챌린지 참여 의향", "option": "그렇지 않다", "count": "0", "base": "20", "multi": "0", "rank": "4"}, {"qid": "q18", "section": "챌린지", "question": "챌린지 참여 의향", "option": "전혀 그렇지 않다", "count": "0", "base": "20", "multi": "0", "rank": "5"}, {"qid": "q19", "section": "챌린지", "question": "참여하고 싶은 챌린지 형태", "option": "누적 거리 달성", "count": "11", "base": "20", "multi": "1", "rank": "1"}, {"qid": "q19", "section": "챌린지", "question": "참여하고 싶은 챌린지 형태", "option": "러닝 기록(PB) 달성", "count": "8", "base": "20", "multi": "1", "rank": "2"}, {"qid": "q19", "section": "챌린지", "question": "참여하고 싶은 챌린지 형태", "option": "크루 단체 대항전", "count": "7", "base": "20", "multi": "1", "rank": "3"}, {"qid": "q19", "section": "챌린지", "question": "참여하고 싶은 챌린지 형태", "option": "연속 러닝/출석", "count": "6", "base": "20", "multi": "1", "rank": "4"}, {"qid": "q19", "section": "챌린지", "question": "참여하고 싶은 챌린지 형태", "option": "특정 코스 완주", "count": "5", "base": "20", "multi": "1", "rank": "5"}, {"qid": "q19", "section": "챌린지", "question": "참여하고 싶은 챌린지 형태", "option": "시즌/이벤트 챌린지", "count": "5", "base": "20", "multi": "1", "rank": "6"}, {"qid": "q20", "section": "챌린지", "question": "추가 인터뷰 참여 의향", "option": "있다", "count": "11", "base": "20", "multi": "0", "rank": "1"}, {"qid": "q20", "section": "챌린지", "question": "추가 인터뷰 참여 의향", "option": "없다", "count": "9", "base": "20", "multi": "0", "rank": "2"}], "responses": [{"rid": "R01", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "기타 (직접 입력)", "q06": "기타 (직접 입력)", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 코스 자체 (Strava 등) | 러닝 후기 및 느낌", "q09": "러닝 정보를 공유하기 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "처음 보는 사람과 함께 달리는 것이 부담스럽다 | 나와 러닝 수준이 맞을지 걱정된다 | 모임의 분위기를 알기 어렵다", "q13": "참여 인원 규모 | 함께하는 사람 or 분위기 | 코스", "q14": "있다", "q17": "있다", "q18": "매우 그렇다", "q19": "누적 거리 달성 | 러닝 기록(PB) 달성 | 특정 코스 완주 | 시즌/이벤트 챌린지", "q20": "있다", "q15_service": "러닝라이프", "q16_pain": "러닝기록만을 순수하게 확인하기 어렵다. 연동지원을 하고있지않는듯하다.그래서 각 신발별로 얼마나 달렸는지 확인하려고 별도의 스트라바앱을 확인한다. 러닝라이프는 사실상 어떤 대회가 있는지, 내가 어떤 대회 참여했고 얼마의 기록을 가지고 있는지 작성하는 용도다."}, {"rid": "R02", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "소속되어 있다", "q03": "정기 러닝 | 번개 러닝 | 친목 및 커뮤니티 활동 | 대회 참여", "q04": "운영자 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 정기적으로 러닝하는 습관을 만들기 위해", "q06": "출석 및 참여 기록 관리가 번거롭다 | 회비 관리 및 정산이 번거롭다 | 번개 러닝 모집이 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "친구/팔로워에게만", "q11": "같은 크루원과 함께", "q12": "나와 러닝 수준이 맞을지 걱정된다", "q13": "러닝 페이스/난이도 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "있다", "q18": "그렇다", "q19": "연속 러닝/출석 | 크루 단체 대항전", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R03", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "정기적으로 러닝하는 습관을 만들기 위해 | 러닝 대회/이벤트에 함께 참여하기 위해", "q06": "일정 조율이 어렵다 | 크루원 간 실력/페이스를 맞추기 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "러닝 수준/페이스가 비슷한 사람과 함께", "q12": "모임의 분위기를 알기 어렵다", "q13": "러닝 페이스/난이도 | 시간 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "없다", "q18": "그렇다", "q19": "시즌/이벤트 챌린지", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R04", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속되어 있다", "q03": "정기 러닝 | 번개 러닝 | 대회 참여 | 챌린지/미션", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 러닝 기록 및 실력을 향상시키기 위해", "q06": "특별히 불편한 점이 없다", "q07": "오픈채팅방에 공유한다", "q08": "공유하지 않는다", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "소속 크루원에게만", "q11": "러닝 수준/페이스가 비슷한 사람과 함께", "q12": "처음 보는 사람과 함께 달리는 것이 부담스럽다 | 모임의 분위기를 알기 어렵다", "q13": "러닝 페이스/난이도 | 위치 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "없다", "q18": "보통이다", "q19": "누적 거리 달성 | 시즌/이벤트 챌린지", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R05", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "과거에 소속된 적이 있다", "q03": "기록 측정 및 관리", "q04": "크루원 역할", "q05": "러닝 기록 및 실력을 향상시키기 위해 | 비슷한 수준의 러너를 만나기 위해", "q06": "회비 관리 및 정산이 번거롭다 | 번개 러닝 모집이 어렵다 | 크루원 간 실력/페이스를 맞추기 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "러닝 수준/페이스가 비슷한 사람과 함께", "q12": "일정/장소를 맞추기 어렵다", "q13": "러닝 페이스/난이도 | 위치 | 참여 인원 규모", "q14": "없다", "q17": "있다", "q18": "그렇다", "q19": "누적 거리 달성 | 러닝 기록(PB) 달성", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R06", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 정기적으로 러닝하는 습관을 만들기 위해", "q06": "일정 조율이 어렵다 | 크루원 간 실력/페이스를 맞추기 어렵다 | 특별히 불편한 점이 없다", "q07": "러닝 기록 앱을 이용한다", "q08": "공유하지 않는다", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "처음 보는 사람과 함께 달리는 것이 부담스럽다 | 나와 러닝 수준이 맞을지 걱정된다 | 모임의 분위기를 알기 어렵다 | 일정/장소를 맞추기 어렵다 | 참여 신청 과정이 번거롭다 | 크루 모집 정보를 찾기 어렵다", "q13": "거리 | 러닝 페이스/난이도 | 위치", "q14": "없다", "q17": "없다", "q18": "보통이다", "q19": "연속 러닝/출석", "q20": "없다", "q15_service": "클투?", "q16_pain": ""}, {"rid": "R07", "q01": "초급 — 5km 정도를 무리 없이 달릴 수 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "기타 (직접 입력)", "q06": "특별히 불편한 점이 없다", "q07": "SNS(ex. 인스타그램)에 기록한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 후기 및 느낌", "q09": "기록을 자랑하기 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "처음 보는 사람과 함께 달리는 것이 부담스럽다", "q13": "위치 | 시간 | 참여 인원 규모", "q14": "있다", "q17": "없다", "q18": "매우 그렇다", "q19": "누적 거리 달성 | 연속 러닝/출석 | 러닝 기록(PB) 달성", "q20": "있다", "q15_service": "러너블", "q16_pain": "안뜨는 대회들도 좀 있어서 아쉬웠습니다"}, {"rid": "R08", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "소속되어 있다", "q03": "정기 러닝 | 대회 참여", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 새로운 러닝 코스나 장소를 경험하기 위해", "q06": "크루원별 참여도/활동량을 확인하기 어렵다 | 크루원 간 실력/페이스를 맞추기 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해 | 러닝 정보를 공유하기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "커뮤니티 팔로우 관계의 러너와 함께", "q12": "모임의 분위기를 알기 어렵다 | 크루 모집 정보를 찾기 어렵다", "q13": "위치 | 참여 인원 규모 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "없다", "q18": "매우 그렇다", "q19": "연속 러닝/출석 | 러닝 기록(PB) 달성", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R09", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 정기적으로 러닝하는 습관을 만들기 위해", "q06": "출석 및 참여 기록 관리가 번거롭다 | 크루원 간 실력/페이스를 맞추기 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 후기 및 느낌", "q09": "기록을 자랑하기 위해 | 다른 사람에게 동기부여를 주거나 받기 위해 | 러닝 정보를 공유하기 위해", "q10": "친구/팔로워에게만", "q11": "러닝 수준/페이스가 비슷한 사람과 함께", "q12": "나와 러닝 수준이 맞을지 걱정된다 | 모임의 분위기를 알기 어렵다", "q13": "러닝 페이스/난이도 | 위치 | 코스", "q14": "없다", "q17": "있다", "q18": "매우 그렇다", "q19": "누적 거리 달성 | 특정 코스 완주 | 시즌/이벤트 챌린지", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R10", "q01": "초급 — 5km 정도를 무리 없이 달릴 수 있음", "q02": "소속되어 있다", "q03": "기록 측정 및 관리 | 친목 및 커뮤니티 활동", "q04": "운영자 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 정기적으로 러닝하는 습관을 만들기 위해", "q06": "번개 러닝 모집이 어렵다 | 크루원 간 실력/페이스를 맞추기 어렵다", "q07": "오픈채팅방에 공유한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 후기 및 느낌", "q09": "다른 사람에게 동기부여를 주거나 받기 위해 | 러닝 정보를 공유하기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "러닝 수준/페이스가 비슷한 사람과 함께", "q12": "처음 보는 사람과 함께 달리는 것이 부담스럽다 | 나와 러닝 수준이 맞을지 걱정된다", "q13": "러닝 페이스/난이도 | 위치", "q14": "없다", "q17": "없다", "q18": "매우 그렇다", "q19": "크루 단체 대항전", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R11", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "과거에 소속된 적이 있다", "q03": "정기 러닝 | 번개 러닝", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 새로운 러닝 코스나 장소를 경험하기 위해", "q06": "크루원 간 실력/페이스를 맞추기 어렵다", "q07": "SNS(ex. 인스타그램)에 기록한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 코스 풍경 사진", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "기존 친구와 함께", "q12": "나와 러닝 수준이 맞을지 걱정된다", "q13": "거리 | 러닝 페이스/난이도 | 시간", "q14": "없다", "q17": "있다", "q18": "그렇다", "q19": "누적 거리 달성 | 연속 러닝/출석 | 크루 단체 대항전", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R12", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "소속되어 있다", "q03": "정기 러닝 | 번개 러닝 | 친목 및 커뮤니티 활동", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 사람들과 친목을 쌓기 위해", "q06": "특별히 불편한 점이 없다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 후기 및 느낌", "q09": "다른 사람에게 동기부여를 주거나 받기 위해 | SNS 콘텐츠로 활용하기 위해", "q10": "친구/팔로워에게만", "q11": "같은 크루원과 함께", "q12": "모임의 분위기를 알기 어렵다", "q13": "참여 인원 규모 | 함께하는 사람 or 분위기 | 코스", "q14": "없다", "q17": "있다", "q18": "그렇다", "q19": "크루 단체 대항전", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R13", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속되어 있다", "q03": "친목 및 커뮤니티 활동 | 대회 참여", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 러닝 기록 및 실력을 향상시키기 위해", "q06": "일정 조율이 어렵다 | 번개 러닝 모집이 어렵다 | 크루원 간 실력/페이스를 맞추기 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 코스 풍경 사진", "q09": "기록을 자랑하기 위해 | 다른 사람에게 동기부여를 주거나 받기 위해", "q10": "친구/팔로워에게만", "q11": "커뮤니티 팔로우 관계의 러너와 함께", "q12": "모임의 분위기를 알기 어렵다", "q13": "거리 | 러닝 페이스/난이도 | 위치", "q14": "없다", "q17": "없다", "q18": "매우 그렇다", "q19": "누적 거리 달성 | 러닝 기록(PB) 달성 | 특정 코스 완주", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R14", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속되어 있다", "q03": "번개 러닝 | 대회 참여", "q04": "운영자 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 정기적으로 러닝하는 습관을 만들기 위해", "q06": "참여 인원을 파악하기 어렵다 | 크루원별 참여도/활동량을 확인하기 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해 | 러닝 정보를 공유하기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "커뮤니티 팔로우 관계의 러너와 함께", "q12": "나와 러닝 수준이 맞을지 걱정된다 | 모임의 분위기를 알기 어렵다", "q13": "거리 | 위치 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "있다", "q18": "매우 그렇다", "q19": "누적 거리 달성 | 특정 코스 완주", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R15", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "기타 (직접 입력)", "q06": "기타 (직접 입력)", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "기록을 자랑하기 위해 | 다른 사람에게 동기부여를 주거나 받기 위해 | SNS 콘텐츠로 활용하기 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "나와 러닝 수준이 맞을지 걱정된다 | 모임의 분위기를 알기 어렵다", "q13": "러닝 페이스/난이도 | 함께하는 사람 or 분위기 | 코스", "q14": "있다", "q17": "있다", "q18": "매우 그렇다", "q19": "러닝 기록(PB) 달성 | 특정 코스 완주 | 시즌/이벤트 챌린지", "q20": "있다", "q15_service": "런데이", "q16_pain": "x"}, {"rid": "R16", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "소속되어 있다", "q03": "정기 러닝 | 번개 러닝 | 친목 및 커뮤니티 활동 | 대회 참여 | 챌린지/미션", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 사람들과 친목을 쌓기 위해", "q06": "크루원별 참여도/활동량을 확인하기 어렵다 | 회비 관리 및 정산이 번거롭다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 코스 자체 (Strava 등)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해 | 러닝 정보를 공유하기 위해 | 기록 경쟁을 위해 | SNS 콘텐츠로 활용하기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "커뮤니티 팔로우 관계의 러너와 함께", "q12": "모임의 분위기를 알기 어렵다 | 일정/장소를 맞추기 어렵다", "q13": "시간 | 참여 인원 규모 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "있다", "q18": "보통이다", "q19": "누적 거리 달성 | 크루 단체 대항전", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R17", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "과거에 소속된 적이 있다", "q03": "번개 러닝 | 챌린지/미션", "q04": "크루원 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서", "q06": "특별히 불편한 점이 없다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "기록 경쟁을 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "처음 보는 사람과 함께 달리는 것이 부담스럽다", "q13": "시간 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "있다", "q18": "보통이다", "q19": "누적 거리 달성", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R18", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 러닝 대회/이벤트에 함께 참여하기 위해", "q06": "공지 및 정보가 여러 채널로 흩어져 있다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "모임의 분위기를 알기 어렵다", "q13": "거리 | 러닝 페이스/난이도 | 위치", "q14": "없다", "q17": "없다", "q18": "그렇다", "q19": "연속 러닝/출석 | 러닝 기록(PB) 달성 | 크루 단체 대항전", "q20": "없다", "q15_service": "", "q16_pain": ""}, {"rid": "R19", "q01": "상급 — 꾸준히 러닝하며 기록 향상을 목표로 함", "q02": "소속되어 있다", "q03": "정기 러닝 | 번개 러닝 | 기록 측정 및 관리 | 친목 및 커뮤니티 활동 | 대회 참여 | 챌린지/미션", "q04": "운영자 역할", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 사람들과 친목을 쌓기 위해", "q06": "크루원별 참여도/활동량을 확인하기 어렵다 | 번개 러닝 모집이 어렵다", "q07": "SNS(ex. 인스타그램)에 기록한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 후기 및 느낌", "q09": "기록을 자랑하기 위해 | SNS 콘텐츠로 활용하기 위해", "q10": "전체 러닝 커뮤니티에", "q11": "같은 크루원과 함께", "q12": "나와 러닝 수준이 맞을지 걱정된다 | 일정/장소를 맞추기 어렵다", "q13": "참여 인원 규모 | 함께하는 사람 or 분위기", "q14": "없다", "q17": "있다", "q18": "매우 그렇다", "q19": "크루 단체 대항전", "q20": "있다", "q15_service": "", "q16_pain": ""}, {"rid": "R20", "q01": "중급 — 10km 이상 러닝 경험이 있음", "q02": "소속된 적 없다", "q03": "", "q04": "", "q05": "혼자 달리는 것보다 함께 달리면 동기부여가 되어서 | 정기적으로 러닝하는 습관을 만들기 위해", "q06": "일정 조율이 어렵다", "q07": "러닝 기록 앱을 이용한다", "q08": "러닝 관련 데이터 (거리, 시간, 평균 페이스, PB 기록) | 러닝 코스 자체 (Strava 등)", "q09": "다른 사람에게 동기부여를 주거나 받기 위해 | 러닝 정보를 공유하기 위해", "q10": "친구/팔로워에게만", "q11": "기존 친구와 함께", "q12": "일정/장소를 맞추기 어렵다", "q13": "러닝 페이스/난이도 | 위치 | 시간", "q14": "없다", "q17": "없다", "q18": "매우 그렇다", "q19": "누적 거리 달성 | 러닝 기록(PB) 달성", "q20": "없다", "q15_service": "", "q16_pain": ""}]};
+(function () {
+  const calcs = {}, listeners = [];
+  window.dash = {
+    colors: ['#3182F6', '#00C7AE', '#FFB331', '#F04452', '#8B5CF6', '#06B6D4', '#84CC16', '#EC4899'],
+    data(id) {
+      if (SURVEY_DATA[id]) return { status: 'ok', data: SURVEY_DATA[id], columns: Object.keys(SURVEY_DATA[id][0] || {}) };
+      const c = calcs[id];
+      if (c) { if (!c.value) c.value = c.fn(...c.inputs.map(i => dash.data(i).data)); return { status: 'ok', data: c.value }; }
+      return { status: 'missing', data: [] };
+    },
+    calc(id, o) { calcs[id] = o; },
+    onData(fn) { listeners.push(fn); fn(); },
+    setLink(name) { history.replaceState(null, '', '#' + name); }
+  };
+  let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => listeners.forEach(f => f()), 150); });
+})();
+</script>
+</head>
+<body>
+<style>
+/* Layout: grey canvas, white rounded cards, one blue accent; type-led like a fintech app report */
+#dash-root { --dash-gutter: 0; }
+.rs {
+  --bg: #F2F4F6; --card: #FFFFFF; --fg: #191F28; --fg2: #4E5968; --fg3: #8B95A1;
+  --track: #F2F4F6; --bar: #D1D6DB; --blue: #3182F6; --blue-weak: #E8F3FF; --blue-ink: #1B64DA;
+  --s1: #1B64DA; --s2: #4C93FF; --s3: #A5CCFF; --s4: #D1D6DB; --s1t: #FFFFFF; --s2t: #FFFFFF; --s3t: #191F28; --s4t: #191F28;
+  --role2: #B0B8C1; --red: #F04452; --red-weak: #FFEEEE; --tipbg: #FFFFFF; --shadow: 0 8px 24px rgba(0, 27, 55, .10);
+  --font: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .rs {
+    --bg: #101013; --card: #1D1D22; --fg: #ECECEF; --fg2: #B4B4BC; --fg3: #80808A;
+    --track: #2A2A31; --bar: #46464F; --blue: #4C93FF; --blue-weak: rgba(76, 147, 255, .16); --blue-ink: #8DBBFF;
+    --s1: #4C93FF; --s2: #2F6CC4; --s3: #26497D; --s4: #46464F; --s1t: #FFFFFF; --s2t: #FFFFFF; --s3t: #ECECEF; --s4t: #ECECEF;
+    --role2: #5C5C66; --red: #FF6B76; --red-weak: rgba(240, 68, 82, .18); --tipbg: #26262C; --shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  }
+}
+:root[data-theme="dark"] .rs {
+  --bg: #101013; --card: #1D1D22; --fg: #ECECEF; --fg2: #B4B4BC; --fg3: #80808A;
+  --track: #2A2A31; --bar: #46464F; --blue: #4C93FF; --blue-weak: rgba(76, 147, 255, .16); --blue-ink: #8DBBFF;
+  --s1: #4C93FF; --s2: #2F6CC4; --s3: #26497D; --s4: #46464F; --s1t: #FFFFFF; --s2t: #FFFFFF; --s3t: #ECECEF; --s4t: #ECECEF;
+  --role2: #5C5C66; --red: #FF6B76; --red-weak: rgba(240, 68, 82, .18); --tipbg: #26262C; --shadow: 0 8px 24px rgba(0, 0, 0, .4);
+}
+
+.rs { background: var(--bg); color: var(--fg); font-family: var(--font); letter-spacing: -0.01em; padding: 40px 20px 56px; }
+.rs .wrap { max-width: 68rem; margin-inline: auto; display: grid; gap: 56px; }
+.rs h1, .rs h2, .rs h3, .rs p { margin: 0; }
+.rs b { font-weight: 700; }
+.rs .num { font-variant-numeric: tabular-nums; }
+
+/* hero */
+.rs .hero { display: grid; gap: 14px; padding-top: 8px; }
+.rs .chip { justify-self: start; font-size: 13px; font-weight: 600; color: var(--blue-ink); background: var(--blue-weak); padding: 6px 12px; border-radius: 999px; }
+.rs h1 { font-size: clamp(28px, 4.4vw, 40px); line-height: 1.3; font-weight: 700; letter-spacing: -0.03em; text-wrap: balance; }
+.rs h1 .hl { color: var(--blue); }
+.rs .sub { font-size: 15px; color: var(--fg3); }
+
+/* section */
+.rs .sec { display: grid; gap: 16px; }
+.rs .sh { display: grid; gap: 4px; padding-inline: 4px; }
+.rs h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.rs .sh p { font-size: 15px; color: var(--fg3); }
+
+/* summary cards */
+.rs .tops { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 12px; }
+.rs .t { background: var(--card); border-radius: 24px; padding: 24px; display: grid; gap: 6px; align-content: start; }
+.rs .t .k { font-size: 14px; font-weight: 600; color: var(--fg3); }
+.rs .t .big { font-size: 44px; font-weight: 700; color: var(--blue); letter-spacing: -0.03em; line-height: 1.15; }
+.rs .t .big small { font-size: 26px; margin-left: 2px; }
+.rs .t .msg { font-size: 18px; font-weight: 700; line-height: 1.4; letter-spacing: -0.02em; text-wrap: balance; }
+.rs .t .meta { font-size: 14px; color: var(--fg3); }
+.rs .t .act { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--fg2); background: var(--track); border-radius: 12px; padding: 10px 14px; }
+
+
+/* pain points: whole section is one toggle */
+.rs .ppsec > .ppsum { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 20px; background: var(--card); }
+.rs .ppsec > .ppsum::-webkit-details-marker { display: none; }
+.rs .ppsec > .ppsum:hover { background: var(--track); }
+.rs .ppsec > .ppsum:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.rs .ppsec > .ppsum .sh { padding: 0; }
+.rs .tri { flex: none; width: 0; height: 0; border-left: 9px solid var(--fg); border-top: 6px solid transparent; border-bottom: 6px solid transparent; transition: transform var(--cds-dur-slow) var(--cds-ease-out); }
+.rs .ppsec[open] > .ppsum .tri { transform: rotate(90deg); }
+.rs .toggles { background: var(--card); border-radius: 24px; padding: 8px 20px; display: grid; }
+.rs .pp { display: grid; gap: 10px; padding: 20px 0; }
+.rs .pp + .pp { border-top: 1px solid var(--track); }
+.rs .pp .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rs .ppi { flex: none; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--card); background: var(--fg); }
+.rs .ttl { flex: 1; min-width: 12rem; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.4; }
+.rs .tags { flex: none; display: flex; gap: 6px; align-items: center; }
+.rs .who { font-size: 12px; font-weight: 600; color: var(--blue-ink); background: var(--blue-weak); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.rs .sev { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.rs .sev.high { color: var(--red); background: var(--red-weak); }
+.rs .sev.mid { color: var(--fg2); background: var(--track); }
+.rs .pp .body { display: grid; gap: 10px; padding-left: 34px; }
+.rs .ppm { display: flex; align-items: baseline; gap: 6px; }
+.rs .pbig { font-size: 30px; font-weight: 700; color: var(--blue); letter-spacing: -0.03em; line-height: 1; }
+.rs .pof { font-size: 15px; color: var(--fg3); font-weight: 600; }
+.rs .meter { height: 8px; max-width: 28rem; border-radius: 999px; background: var(--track); overflow: hidden; }
+.rs .meter i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--blue); }
+.rs .pp .cap { font-size: 14px; line-height: 1.55; color: var(--fg2); }
+.rs .pp .act { justify-self: start; font-size: 14px; font-weight: 600; color: var(--fg); background: var(--track); border-radius: 12px; padding: 10px 14px; }
+.rs .pp .act::before { content: "해결 방향  "; color: var(--blue-ink); font-weight: 700; }
+@media (max-width: 560px) { .rs .pp .body { padding-left: 0; } .rs .toggles { padding: 4px 16px; } }
+/* chart cards */
+.rs .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 12px; }
+.rs .card { background: var(--card); border-radius: 24px; padding: 24px; display: grid; grid-template-rows: auto 1fr auto; gap: 20px; min-width: 0; position: relative; }
+.rs .card.wide { grid-column: 1 / -1; }
+.rs .ct { display: grid; gap: 2px; }
+.rs .ct h3 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.rs .ct span { font-size: 13px; color: var(--fg3); }
+.rs .insight { font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--blue-ink); background: var(--blue-weak); border-radius: 14px; padding: 12px 16px; }
+
+.rs .bars { display: grid; gap: 14px; align-content: start; min-height: 5rem; }
+.rs .bar { display: grid; gap: 7px; }
+.rs .lb { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; color: var(--fg2); }
+.rs .lb span:first-child { min-width: 0; }
+.rs .lb .val { font-weight: 700; color: var(--fg); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rs .lb .val em { font-style: normal; font-weight: 500; color: var(--fg3); margin-left: 6px; }
+.rs .track { height: 14px; border-radius: 999px; background: var(--track); overflow: hidden; }
+.rs .fill { height: 100%; border-radius: 999px; background: var(--bar); }
+.rs .bar.top .lb span:first-child { color: var(--fg); font-weight: 700; }
+.rs .bar.top .val { color: var(--blue); }
+.rs .bar.top .fill { background: var(--blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .rs:not(.drawn) .fill, .rs:not(.drawn) .seg { animation: rs-grow var(--cds-dur-slow) var(--cds-ease-out) both; transform-origin: left; }
+  @keyframes rs-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+.rs .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--fg2); }
+.rs .legend span { display: inline-flex; align-items: center; gap: 6px; }
+.rs .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.rs .gwrap, .rs .swrap { display: grid; gap: 18px; align-content: start; }
+.rs .gbar { display: grid; gap: 6px; }
+.rs .gbar .row2 { display: grid; grid-template-columns: 1fr 6.5rem; gap: 10px; align-items: center; }
+.rs .gbar .track { height: 10px; }
+.rs .gbar .val { font-size: 13px; color: var(--fg2); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rs .gbar .val b { color: var(--fg); }
+.rs .stack { display: grid; gap: 18px; }
+.rs .srow { display: grid; gap: 8px; }
+.rs .sbar { display: flex; height: 32px; gap: 3px; border-radius: 10px; overflow: hidden; }
+.rs .seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
+
+.rs .quotes { display: grid; gap: 10px; align-content: start; }
+.rs .q { background: var(--track); border-radius: 16px; padding: 14px 16px; display: grid; gap: 6px; }
+.rs .q .svc { font-size: 13px; font-weight: 700; color: var(--blue-ink); }
+.rs .q p { font-size: 14px; line-height: 1.6; color: var(--fg2); }
+
+.rs .tip { position: absolute; pointer-events: none; background: var(--tipbg); color: var(--fg); border-radius: 12px; box-shadow: var(--shadow); padding: 10px 12px; font-size: 13px; line-height: 1.5; max-width: 16rem; z-index: 2; }
+.rs .tip .tq { color: var(--fg3); }
+.rs .tip b { color: var(--blue); }
+.rs .fail { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--fg3); font-size: 13px; min-height: 5rem; }
+.rs .fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.rs [data-dash-source-state=empty] { color: transparent; }
+.rs [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.rs .foot { font-size: 13px; line-height: 1.7; color: var(--fg3); padding-inline: 4px; }
+@media (max-width: 480px) { .rs { padding: 28px 16px 40px; } .rs .card, .rs .t { padding: 20px; border-radius: 20px; } .rs .wrap { gap: 44px; } }
+</style>
+
+<div class="rs" id="top"><div class="wrap">
+  <header class="hero">
+    <span class="chip">러너 설문 리포트</span>
+    <h1 id="title">러너 <span class="hl"><span class="v num" data-source="tally" data-field="base" data-where="qid=q01&amp;option=중급 — 10km 이상 러닝 경험이 있음">—</span>명</span>에게<br>크루와 러닝 이야기를 물어봤어요</h1>
+    <p class="sub">2026년 10월 8–9일 응답 · 문항별 결과와 인사이트</p>
+  </header>
+
+
+  <details class="sec ppsec" id="painpoints">
+    <summary class="ppsum"><span class="tri big" aria-hidden="true"></span><span class="sh"><h2>페인포인트</h2><p>누르면 6가지 페인포인트와 근거, 해결 방향이 펼쳐져요</p></span></summary>
+    <div class="toggles">
+      <article class="pp" id="pp1">
+        <div class="row"><span class="ppi num">1</span><span class="ttl">모임 분위기를 미리 알 수 없어요</span><span class="tags"><span class="who">처음 오는 러너</span><span class="sev high">높음</span></span></div>
+        <div class="body">
+          <div class="ppm"><span class="pbig num"><span class="v pn" data-source="tally" data-field="count" data-where="qid=q12&amp;option=모임의 분위기를 알기 어렵다">—</span></span><span class="pof num">/ <span class="v pd" data-source="tally" data-field="base" data-where="qid=q12&amp;option=모임의 분위기를 알기 어렵다">—</span>명</span></div>
+          <div class="meter"><i></i></div>
+          <p class="cap">‘분위기를 알기 어렵다’ · 참여 부담 1위</p>
+          <p class="act">지난 모임 사진·후기·참가자 정보를 먼저 보여주기</p>
+        </div>
+      </article>
+      <article class="pp" id="pp2">
+        <div class="row"><span class="ppi num">2</span><span class="ttl">내 실력이 맞을지 걱정돼요</span><span class="tags"><span class="who">처음 오는 러너</span><span class="sev high">높음</span></span></div>
+        <div class="body">
+          <div class="ppm"><span class="pbig num"><span class="v pn" data-source="tally" data-field="count" data-where="qid=q12&amp;option=나와 러닝 수준이 맞을지 걱정된다">—</span></span><span class="pof num">/ <span class="v pd" data-source="tally" data-field="base" data-where="qid=q12&amp;option=나와 러닝 수준이 맞을지 걱정된다">—</span>명</span></div>
+          <div class="meter"><i></i></div>
+          <p class="cap">‘수준이 맞을지 걱정’ · “그날 체력이 달라 남에게 피해 줄까 봐” 가입을 망설인다는 주관식도 있었어요</p>
+          <p class="act">모임마다 페이스 구간과 “늦어도 OK” 그룹 표시</p>
+        </div>
+      </article>
+      <article class="pp" id="pp3">
+        <div class="row"><span class="ppi num">3</span><span class="ttl">크루 안에서 페이스가 안 맞아요</span><span class="tags"><span class="who">크루원</span><span class="sev high">높음</span></span></div>
+        <div class="body">
+          <div class="ppm"><span class="pbig num"><span class="v pn" data-source="pain_by_role" data-field="크루원 역할" data-where="pain=크루원 간 실력/페이스를 맞추기 어렵다">—</span></span><span class="pof num">/ <span class="v pd" data-source="tally" data-field="count" data-where="qid=q04&amp;option=크루원 역할">—</span>명</span></div>
+          <div class="meter"><i></i></div>
+          <p class="cap">크루원 중 ‘실력·페이스 맞추기’ 불편 · 크루 불편 전체 1위</p>
+          <p class="act">한 모임 안에서 페이스 그룹 나눠 달리기</p>
+        </div>
+      </article>
+      <article class="pp" id="pp4">
+        <div class="row"><span class="ppi num">4</span><span class="ttl">아는 사람 없이는 시작이 어려워요</span><span class="tags"><span class="who">크루 비소속 러너</span><span class="sev mid">중간</span></span></div>
+        <div class="body">
+          <div class="ppm"><span class="pbig num"><span class="v pn" data-source="headline" data-field="n" data-where="id=friends">—</span></span><span class="pof num">/ <span class="v pd" data-source="headline" data-field="base" data-where="id=friends">—</span>명</span></div>
+          <div class="meter"><i></i></div>
+          <p class="cap">크루 비소속 러너 중 ‘기존 친구와’ 달리기 선호</p>
+          <p class="act">친구 초대·함께 신청으로 첫 참여 만들기</p>
+        </div>
+      </article>
+      <article class="pp" id="pp5">
+        <div class="row"><span class="ppi num">5</span><span class="ttl">번개 모집과 참여 관리가 번거로워요</span><span class="tags"><span class="who">운영자</span><span class="sev mid">중간</span></span></div>
+        <div class="body">
+          <div class="ppm"><span class="pbig num"><span class="v pn" data-source="pain_by_role" data-field="운영자 역할" data-where="pain=번개 러닝 모집이 어렵다">—</span></span><span class="pof num">/ <span class="v pd" data-source="tally" data-field="count" data-where="qid=q04&amp;option=운영자 역할">—</span>명</span></div>
+          <div class="meter"><i></i></div>
+          <p class="cap">운영자 중 ‘번개 모집이 어렵다’ · 참여도 확인·출석·정산도 언급</p>
+          <p class="act">모집·참석 확인·출석·정산을 한 화면에</p>
+        </div>
+      </article>
+      <article class="pp" id="pp6">
+        <div class="row"><span class="ppi num">6</span><span class="ttl">기록과 모임 정보가 흩어져 있어요</span><span class="tags"><span class="who">공통</span><span class="sev mid">중간</span></span></div>
+        <div class="body">
+          <div class="ppm"><span class="pbig num"><span class="v pn" data-source="tally" data-field="count" data-where="qid=q14&amp;option=없다">—</span></span><span class="pof num">/ <span class="v pd" data-source="tally" data-field="base" data-where="qid=q14&amp;option=없다">—</span>명</span></div>
+          <div class="meter"><i></i></div>
+          <p class="cap">러닝 커뮤니티 서비스 미이용 · “연동이 안 돼 스트라바를 따로 봐요”</p>
+          <p class="act">기록 앱 연동으로 기록을 바로 가져오기</p>
+        </div>
+      </article>
+    </div>
+  </details>
+
+  <section class="sec" id="summary">
+    <div class="sh"><h2>한눈에 보는 인사이트</h2><p>숫자 6개로 정리했어요</p></div>
+    <div class="tops">
+      <div class="t"><span class="k">동기</span>
+        <div class="big num"><span class="v" data-source="headline" data-field="pct" data-where="id=motive">—</span><small>%</small></div>
+        <p class="msg">함께 달리는 이유는 ‘동기부여’예요</p>
+        <p class="meta num"><span class="v" data-source="headline" data-field="base" data-where="id=motive">—</span>명 중 <span class="v" data-source="headline" data-field="n" data-where="id=motive">—</span>명</p>
+        <p class="act">응원과 함께 달린 기록을 핵심 경험으로</p></div>
+      <div class="t"><span class="k">진입 장벽</span>
+        <div class="big num"><span class="v" data-source="headline" data-field="pct" data-where="id=mood">—</span><small>%</small></div>
+        <p class="msg">새 모임은 분위기를 몰라서 망설여요</p>
+        <p class="meta num"><span class="v" data-source="headline" data-field="base" data-where="id=mood">—</span>명 중 <span class="v" data-source="headline" data-field="n" data-where="id=mood">—</span>명</p>
+        <p class="act">페이스·분위기·후기를 먼저 보여주기</p></div>
+      <div class="t"><span class="k">크루 운영</span>
+        <div class="big num"><span class="v" data-source="headline" data-field="pct" data-where="id=pace">—</span><small>%</small></div>
+        <p class="msg">크루에서 가장 불편한 건 페이스 맞추기</p>
+        <p class="meta num"><span class="v" data-source="headline" data-field="base" data-where="id=pace">—</span>명 중 <span class="v" data-source="headline" data-field="n" data-where="id=pace">—</span>명</p>
+        <p class="act">페이스 그룹 나누기와 운영 도구</p></div>
+      <div class="t"><span class="k">관계</span>
+        <div class="big num"><span class="v" data-source="headline" data-field="pct" data-where="id=friends">—</span><small>%</small></div>
+        <p class="msg">크루 밖 러너는 친구와 달리고 싶어 해요</p>
+        <p class="meta num">크루 비소속 <span class="v" data-source="headline" data-field="base" data-where="id=friends">—</span>명 중 <span class="v" data-source="headline" data-field="n" data-where="id=friends">—</span>명</p>
+        <p class="act">친구 초대로 첫 참여 만들기</p></div>
+      <div class="t"><span class="k">시장</span>
+        <div class="big num"><span class="v" data-source="headline" data-field="pct" data-where="id=noservice">—</span><small>%</small></div>
+        <p class="msg">러닝 커뮤니티 서비스를 안 쓰고 있어요</p>
+        <p class="meta num"><span class="v" data-source="headline" data-field="base" data-where="id=noservice">—</span>명 중 <span class="v" data-source="headline" data-field="n" data-where="id=noservice">—</span>명</p>
+        <p class="act">기록 앱 연동으로 쉽게 시작하게</p></div>
+      <div class="t"><span class="k">챌린지</span>
+        <div class="big num"><span class="v" data-source="headline" data-field="pct" data-where="id=challenge">—</span><small>%</small></div>
+        <p class="msg">챌린지에 참여하고 싶어요. 부정 응답은 0명</p>
+        <p class="meta num"><span class="v" data-source="headline" data-field="base" data-where="id=challenge">—</span>명 중 <span class="v" data-source="headline" data-field="n" data-where="id=challenge">—</span>명</p>
+        <p class="act">누적 거리 챌린지부터 시작하기</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-profile">
+    <div class="sh"><h2>누가 답했나요</h2><p>응답자 프로필</p></div>
+    <div class="grid">
+      <div class="card" data-q="q01"><div class="ct"><h3>러닝 수준</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">중급이 과반이에요. 초급은 적어서 입문자 의견은 거의 없어요</p></div>
+      <div class="card" data-q="q02"><div class="ct"><h3>크루 소속 여부</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">소속자와 비소속자가 비슷하게 섞여 있어요</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-crew">
+    <div class="sh"><h2>크루, 왜 하고 뭐가 불편할까요</h2><p>크루 활동과 불편</p></div>
+    <div class="grid">
+      <div class="card" data-q="q05"><div class="ct"><h3>크루에 가입·결성하는 이유</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">동기부여가 압도적 1위, 습관 만들기가 2위예요</p></div>
+      <div class="card" data-q="q06"><div class="ct"><h3>크루 운영·참여 시 불편</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">페이스 맞추기 다음은 모집·일정 같은 운영 문제예요</p></div>
+      <div class="card" data-q="q03"><div class="ct"><h3>크루에서 주로 하는 활동</h3><span>복수 응답 · 크루 경험자</span></div><div class="bars" data-source="tally"></div><p class="insight">번개·정기·대회가 고르게 높아요. 정기와 즉흥 모임 모두 필요해요</p></div>
+      <div class="card" data-q="q04"><div class="ct"><h3>크루에서 선호하는 위치</h3><span>단일 응답 · 크루 경험자</span></div><div class="bars" data-source="tally"></div><p class="insight">운영자를 원하는 사람도 적지 않아요. 운영 도구 수요가 있어요</p></div>
+      <div class="card wide" id="pain-role"><div class="ct"><h3>역할별 불편 사항</h3><span>각 역할 안에서의 비율 · 복수 응답</span></div>
+        <div class="gwrap" data-source="pain_by_role tally"><div class="legend"></div><div class="bars"></div></div>
+        <p class="insight">운영자는 번개 모집·참여도 확인을, 크루원은 페이스 차이를 더 많이 꼽았어요</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-share">
+    <div class="sh"><h2>기록은 어떻게 나눌까요</h2><p>러닝 후 기록 공유</p></div>
+    <div class="grid">
+      <div class="card" data-q="q07"><div class="ct"><h3>공유 방법</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">공유는 대부분 러닝 기록 앱 안에서 해요</p></div>
+      <div class="card" data-q="q08"><div class="ct"><h3>공유하는 내용</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">숫자 기록이 거의 전부예요. 후기·사진은 일부만 나눠요</p></div>
+      <div class="card" data-q="q09"><div class="ct"><h3>공유하는 이유</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">공유 목적도 동기부여예요. 자랑·경쟁은 소수예요</p></div>
+      <div class="card" data-q="q10"><div class="ct"><h3>공유 대상</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">가까운 사람에게만 공유하는 쪽이 많아요. 공개 범위 설정이 필요해요</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-together">
+    <div class="sh"><h2>누구와, 어떤 모임에서 달릴까요</h2><p>함께 달리기와 모임 선택</p></div>
+    <div class="grid">
+      <div class="card" data-q="q12"><div class="ct"><h3>번개·새 크루 참여 시 부담</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">낯선 사람보다 정보가 없는 게 더 큰 부담이에요</p></div>
+      <div class="card" data-q="q13"><div class="ct"><h3>모임 선택 시 중요 조건</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">페이스·분위기·위치가 모임을 고르는 세 기준이에요</p></div>
+      <div class="card" data-q="q11"><div class="ct"><h3>함께 달릴 때 선호 방식</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">‘기존 친구와 함께’가 1위예요</p></div>
+      <div class="card" id="style-crew"><div class="ct"><h3>크루 소속별 선호 방식</h3><span>단일 응답</span></div>
+        <div class="swrap" data-source="style_by_crew"><div class="legend"></div><div class="stack"></div></div>
+        <p class="insight">크루 밖은 친구와, 크루 안은 크루원·팔로우 러너와 달려요</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="sec-challenge">
+    <div class="sh"><h2>챌린지와 서비스</h2><p>지금 쓰는 서비스와 챌린지 관심도</p></div>
+    <div class="grid">
+      <div class="card" data-q="q18"><div class="ct"><h3>챌린지 참여 의향</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">절반이 ‘매우 그렇다’예요. 부정 응답은 없어요</p></div>
+      <div class="card" data-q="q19"><div class="ct"><h3>원하는 챌린지 형태</h3><span>복수 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">누적 거리·PB 같은 개인 챌린지가 상위, 크루 대항전이 그다음이에요</p></div>
+      <div class="card" data-q="q17"><div class="ct"><h3>챌린지 참여 경험</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">절반 이상이 이미 해봐서 익숙한 형식이에요</p></div>
+      <div class="card" data-q="q14"><div class="ct"><h3>러닝 커뮤니티 서비스 이용</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">대부분 쓰지 않아요. 모임은 오픈채팅·기록 앱에 흩어져 있어요</p></div>
+      <div class="card" data-q="q20"><div class="ct"><h3>추가 인터뷰 의향</h3><span>단일 응답</span></div><div class="bars" data-source="tally"></div><p class="insight">절반 이상 가능해요. 운영자와 비소속 러너로 나눠 인터뷰해 보세요</p></div>
+      <div class="card" id="services"><div class="ct"><h3>쓰고 있는 서비스의 아쉬운 점</h3><span>주관식 응답</span></div>
+        <div class="quotes"></div>
+        <p class="insight">기록 앱 연동이 안 되는 점, 대회 정보 누락이 아쉽대요</p></div>
+    </div>
+  </section>
+
+  <p class="foot">응답자 수가 적어 한두 명 차이는 크게 해석하지 마세요. 내용이 같은 중복 제출은 한 건만 남겼고, 주관식 ‘기타’ 답은 ‘기타 (직접 입력)’으로 묶었어요. 연락처는 담지 않았어요.</p>
+  <div class="tip" id="tip" hidden></div>
+</div></div>
+
+<script>
+dash.calc('challenge_positive', {
+  inputs: ['tally'],
+  title: '챌린지 참여 의향 긍정',
+  description: '챌린지 참여 의향에 ‘매우 그렇다’ 또는 ‘그렇다’로 답한 사람 수입니다.',
+  fn: (tally) => [{ positive: tally.filter(r => r.qid === 'q18' && (r.option === '매우 그렇다' || r.option === '그렇다')).reduce((s, r) => s + Number(r.count), 0) }]
+});
+
+dash.calc('style_by_crew', {
+  inputs: ['responses'],
+  title: '크루 소속별 선호 방식',
+  description: '크루 소속 상태별로 함께 달릴 때 선호하는 방식을 고른 사람 수입니다.',
+  fn: (responses) => ['소속되어 있다', '과거에 소속된 적이 있다', '소속된 적 없다'].map(crew => {
+    const row = { crew, '기존 친구와 함께': 0, '러닝 수준/페이스가 비슷한 사람과 함께': 0, '커뮤니티 팔로우 관계의 러너와 함께': 0, '같은 크루원과 함께': 0, total: 0 };
+    responses.filter(r => r.q02 === crew).forEach(r => { row[r.q11] += 1; row.total += 1; });
+    return row;
+  })
+});
+
+dash.calc('pain_by_role', {
+  inputs: ['responses'],
+  title: '역할별 불편 사항',
+  description: '크루에서 운영자·크루원 역할을 고른 사람이 꼽은 불편 사항 수입니다.',
+  fn: (responses) => {
+    const out = {};
+    responses.filter(r => r.q04 === '운영자 역할' || r.q04 === '크루원 역할').forEach(r => {
+      r.q06.split(' | ').forEach(pain => {
+        out[pain] = out[pain] || { pain, '운영자 역할': 0, '크루원 역할': 0 };
+        out[pain][r.q04] += 1;
+      });
+    });
+    return Object.values(out).sort((a, b) => (b['운영자 역할'] + b['크루원 역할']) - (a['운영자 역할'] + a['크루원 역할']) || b['운영자 역할'] - a['운영자 역할']);
+  }
+});
+
+dash.calc('headline', {
+  inputs: ['tally', 'style_by_crew', 'challenge_positive'],
+  title: '한눈에 보는 인사이트',
+  description: '상단 카드 6개의 응답 수, 기준 인원, 비율(%)입니다.',
+  fn: (tally, style_by_crew, challenge_positive) => {
+    const t = (q, o) => tally.find(r => r.qid === q && r.option === o);
+    const row = (id, n, base) => ({ id, n: Number(n), base: Number(base), pct: Math.round(Number(n) / Number(base) * 100) });
+    const pick = (id, q, o) => { const r = t(q, o); return row(id, r.count, r.base); };
+    const nc = style_by_crew.find(r => r.crew === '소속된 적 없다');
+    return [
+      pick('motive', 'q05', '혼자 달리는 것보다 함께 달리면 동기부여가 되어서'),
+      pick('mood', 'q12', '모임의 분위기를 알기 어렵다'),
+      pick('pace', 'q06', '크루원 간 실력/페이스를 맞추기 어렵다'),
+      row('friends', nc['기존 친구와 함께'], nc.total),
+      pick('noservice', 'q14', '없다'),
+      row('challenge', challenge_positive[0].positive, t('q18', '매우 그렇다').base)
+    ];
+  }
+});
+
+(function () {
+  const root = document.querySelector('.rs');
+  const pct = d3.format('.0%');
+  const tip = document.getElementById('tip');
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  function find(rows, where) {
+    const p = new URLSearchParams(where);
+    return rows.find(r => [...p.entries()].every(([k, v]) => String(r[k]) === v));
+  }
+  function fillMarks(id) {
+    const d = dash.data(id);
+    root.querySelectorAll(`.v[data-source="${id}"]`).forEach(m => {
+      m.classList.toggle('dash-skeleton', d.status === 'loading');
+      if (d.status !== 'ok') { m.textContent = '—'; return; }
+      const rows = d.data || [];
+      const r = m.dataset.where ? find(rows, m.dataset.where) : rows[Number(m.dataset.row || 0)];
+      m.textContent = r && r[m.dataset.field] != null ? d3.format(',')(Number(r[m.dataset.field])) : '—';
+    });
+  }
+  function state(box, ids) {
+    const ss = ids.map(id => dash.data(id).status);
+    const loading = ss.includes('loading');
+    box.classList.toggle('dash-skeleton', loading);
+    if (loading) { box.replaceChildren(); return false; }
+    if (ss.some(s => s !== 'ok')) { box.replaceChildren(el('div', 'fail', 'Failed to load')); return false; }
+    return true;
+  }
+
+  function showTip(card, ev, lines) {
+    const box = card.getBoundingClientRect();
+    tip.replaceChildren(...lines.map((t, i) => el('div', i === 0 ? 'tq' : '', t)));
+    card.appendChild(tip);
+    tip.hidden = false;
+    const tw = tip.offsetWidth;
+    let x = ev.clientX - box.left + 12;
+    if (x + tw > box.width - 8) x = Math.max(8, ev.clientX - box.left - tw - 12);
+    tip.style.left = x + 'px';
+    tip.style.top = (ev.clientY - box.top + 16) + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+  const hover = (node, card, lines) => { node.addEventListener('mousemove', ev => showTip(card, ev, lines)); node.addEventListener('mouseleave', hideTip); };
+
+  function drawBars() {
+    root.querySelectorAll('.card[data-q]').forEach(card => {
+      const box = card.querySelector('.bars');
+      if (!state(box, ['tally'])) return;
+      const rows = dash.data('tally').data.filter(r => r.qid === card.dataset.q).sort((a, b) => Number(a.rank) - Number(b.rank));
+      const max = d3.max(rows, r => Number(r.count)) || 1;
+      box.replaceChildren(...rows.map(r => {
+        const n = Number(r.count), base = Number(r.base);
+        const b = el('div', 'bar' + (n === max ? ' top' : ''));
+        const lb = el('div', 'lb');
+        const val = el('span', 'val', pct(n / base));
+        val.appendChild(el('em', '', `${n}명`));
+        lb.append(el('span', '', r.option), val);
+        const track = el('div', 'track'), fill = el('div', 'fill');
+        fill.style.width = (n / base * 100) + '%';
+        track.appendChild(fill);
+        b.append(lb, track);
+        hover(b, card, [r.question, r.option, `${base}명 중 ${n}명 (${pct(n / base)})`]);
+        return b;
+      }));
+    });
+  }
+
+  function legend(box, items) {
+    box.replaceChildren(...items.map(([name, color]) => { const s = el('span'); const i = el('i'); i.style.background = color; s.append(i, name); return s; }));
+  }
+
+  function drawPainRole() {
+    const card = root.querySelector('#pain-role');
+    const box = card.querySelector('.bars'), lg = card.querySelector('.legend');
+    if (!state(box, ['pain_by_role', 'tally'])) { lg.replaceChildren(); return; }
+    const tally = dash.data('tally').data;
+    const roles = [['운영자 역할', '운영자', 'var(--blue)'], ['크루원 역할', '크루원', 'var(--role2)']];
+    const size = Object.fromEntries(roles.map(([k]) => [k, Number((tally.find(r => r.qid === 'q04' && r.option === k) || {}).count) || 1]));
+    legend(lg, roles.map(([k, name, c]) => [`${name} ${size[k]}명`, c]));
+    box.replaceChildren(...dash.data('pain_by_role').data.map(r => {
+      const g = el('div', 'gbar');
+      g.appendChild(el('div', 'lb')).appendChild(el('span', '', r.pain));
+      roles.forEach(([k, name, c]) => {
+        const n = r[k], share = n / size[k];
+        const row = el('div', 'row2');
+        const track = el('div', 'track'), fill = el('div', 'fill');
+        fill.style.width = (share * 100) + '%'; fill.style.background = c;
+        track.appendChild(fill);
+        const val = el('span', 'val'); val.append(el('b', '', pct(share)), ` · ${n}명`);
+        row.append(track, val);
+        hover(row, card, [r.pain, `${name} ${size[k]}명 중 ${n}명 (${pct(share)})`]);
+        g.appendChild(row);
+      });
+      return g;
+    }));
+  }
+
+  function drawStyleCrew() {
+    const card = root.querySelector('#style-crew');
+    const box = card.querySelector('.stack'), lg = card.querySelector('.legend');
+    if (!state(box, ['style_by_crew'])) { lg.replaceChildren(); return; }
+    const keys = [['기존 친구와 함께', '기존 친구'], ['러닝 수준/페이스가 비슷한 사람과 함께', '비슷한 페이스'], ['커뮤니티 팔로우 관계의 러너와 함께', '팔로우 러너'], ['같은 크루원과 함께', '같은 크루원']];
+    legend(lg, keys.map(([, s], i) => [s, `var(--s${i + 1})`]));
+    box.replaceChildren(...dash.data('style_by_crew').data.map(r => {
+      const row = el('div', 'srow');
+      const lb = el('div', 'lb'); lb.append(el('span', '', r.crew), el('span', 'val', `${r.total}명`));
+      const bar = el('div', 'sbar');
+      keys.forEach(([k, s], i) => {
+        const n = r[k]; if (!n) return;
+        const seg = el('div', 'seg', n);
+        seg.style.flex = String(n); seg.style.background = `var(--s${i + 1})`; seg.style.color = `var(--s${i + 1}t)`;
+        hover(seg, card, [r.crew, `${s} · ${r.total}명 중 ${n}명 (${pct(n / r.total)})`]);
+        bar.appendChild(seg);
+      });
+      row.append(lb, bar);
+      return row;
+    }));
+  }
+
+  function drawQuotes() {
+    const box = root.querySelector('#services .quotes');
+    if (!state(box, ['responses'])) return;
+    box.replaceChildren(...dash.data('responses').data.filter(r => (r.q15_service || '').trim()).map(r => {
+      const q = el('div', 'q');
+      const svc = el('span', 'svc', r.q15_service);
+      svc.dataset.source = 'responses'; svc.dataset.field = 'q15_service'; svc.dataset.where = 'rid=' + r.rid;
+      const p = el('p', '', (r.q16_pain || '').trim() || '—');
+      if ((r.q16_pain || '').trim()) { p.dataset.source = 'responses'; p.dataset.field = 'q16_pain'; p.dataset.where = 'rid=' + r.rid; }
+      q.append(svc, p);
+      return q;
+    }));
+  }
+
+  dash.onData(() => {
+    ['tally', 'headline', 'pain_by_role'].forEach(fillMarks);
+    root.querySelectorAll('.pp').forEach(c => { const n = Number(c.querySelector('.pn').textContent), b = Number(c.querySelector('.pd').textContent); c.querySelector('.meter i').style.width = (b > 0 && n >= 0 ? n / b * 100 : 0) + '%'; });
+    drawBars(); drawPainRole(); drawStyleCrew(); drawQuotes();
+    if (dash.data('tally').status === 'ok' && !root.dataset.t) { root.dataset.t = '1'; setTimeout(() => root.classList.add('drawn'), 1200); }
+  });
+
+  const named = document.getElementById(location.hash.slice(1));
+  if (named) { named.scrollIntoView(); dash.setLink(named.id); }
+})();
+</script>
+
+</body>
+</html>
